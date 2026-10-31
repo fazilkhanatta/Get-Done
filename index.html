@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>To Do</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="To Do">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<style>
+:root{
+  --bg:#f2f2f7;--card:#fff;--text:#1c1c1e;--muted:#8e8e93;--line:#e5e5ea;
+  --accent:#0a84ff;--danger:#ff453a;--star:#ff9f0a;--done:#34c759;
+}
+@media (prefers-color-scheme:dark){
+  :root{--bg:#000;--card:#1c1c1e;--text:#f2f2f7;--muted:#8e8e93;--line:#38383a;}
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;}
+body{min-height:100vh;min-height:100dvh;
+  padding:env(safe-area-inset-top) 0 calc(env(safe-area-inset-bottom) + 90px)}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+header{padding:28px 4px 12px}
+h1{margin:0;font-size:34px;font-weight:800;letter-spacing:-.5px}
+.sub{color:var(--muted);font-size:15px;margin-top:2px}
+.bar{height:6px;background:var(--line);border-radius:3px;margin:14px 4px 4px;overflow:hidden}
+.bar>i{display:block;height:100%;width:0;background:var(--done);border-radius:3px;transition:width .3s}
+.tabs{display:flex;gap:4px;background:var(--line);border-radius:10px;padding:3px;margin:14px 0}
+.tabs button{flex:1;border:0;background:none;color:var(--text);font:600 14px inherit;font-family:inherit;
+  padding:8px;border-radius:8px}
+.tabs button.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.15)}
+ul{list-style:none;margin:0;padding:0;background:var(--card);border-radius:14px;overflow:hidden}
+li{display:flex;align-items:center;gap:12px;padding:13px 14px;border-bottom:1px solid var(--line)}
+li:last-child{border-bottom:0}
+.chk{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--muted);
+  background:none;display:grid;place-items:center;padding:0;color:#fff}
+li.done .chk{background:var(--done);border-color:var(--done)}
+.chk svg{width:14px;height:14px;opacity:0}
+li.done .chk svg{opacity:1}
+.body{flex:1;min-width:0}
+.txt{font-size:17px;line-height:1.3;word-wrap:break-word;outline:none}
+li.done .txt{text-decoration:line-through;color:var(--muted)}
+.meta{font-size:13px;color:var(--muted);margin-top:2px}
+.meta.over{color:var(--danger);font-weight:600}
+.star,.del{flex:none;border:0;background:none;font-size:20px;padding:4px;color:var(--muted);line-height:1}
+.star.on{color:var(--star)}
+.del{color:var(--danger);font-size:18px}
+.empty{text-align:center;color:var(--muted);padding:40px 20px;font-size:16px}
+.foot{display:flex;justify-content:space-between;align-items:center;padding:12px 6px;color:var(--muted);font-size:14px}
+.foot button{border:0;background:none;color:var(--accent);font:inherit;font-weight:600}
+form{position:fixed;left:0;right:0;bottom:0;background:color-mix(in srgb,var(--bg) 85%,transparent);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  padding:10px 16px calc(env(safe-area-inset-bottom) + 10px);border-top:1px solid var(--line)}
+.row{max-width:640px;margin:0 auto;display:flex;gap:8px;align-items:center}
+input[type=text]{flex:1;min-width:0;font-size:17px;padding:12px 14px;border-radius:12px;
+  border:1px solid var(--line);background:var(--card);color:var(--text);outline:none;font-family:inherit}
+input[type=text]:focus{border-color:var(--accent)}
+input[type=date]{font-size:14px;padding:9px 6px;border-radius:12px;border:1px solid var(--line);
+  background:var(--card);color:var(--text);width:118px;font-family:inherit}
+.add{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:var(--accent);
+  color:#fff;font-size:28px;line-height:1;padding:0 0 3px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>To Do</h1>
+    <div class="sub" id="sub"></div>
+    <div class="bar"><i id="prog"></i></div>
+  </header>
+  <div class="tabs" id="tabs">
+    <button data-f="active" class="on">Active</button>
+    <button data-f="all">All</button>
+    <button data-f="done">Done</button>
+  </div>
+  <ul id="list"></ul>
+  <div class="foot"><span id="count"></span><button id="clear">Clear completed</button></div>
+</div>
+
+<form id="form" autocomplete="off">
+  <div class="row">
+    <input type="text" id="input" placeholder="Add a task" enterkeyhint="done" maxlength="200">
+    <input type="date" id="due" aria-label="Due date">
+    <button class="add" aria-label="Add">+</button>
+  </div>
+</form>
+
+<script>
+const KEY = 'todo.v1';
+let tasks = [];
+let filter = 'active';
+try { tasks = JSON.parse(localStorage.getItem(KEY)) || []; } catch (e) {}
+
+const $ = id => document.getElementById(id);
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(tasks)); } catch (e) {} };
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+const today = () => { const d = new Date(); d.setMinutes(d.getMinutes() - d.getTimezoneOffset()); return d.toISOString().slice(0, 10); };
+const esc = s => s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+function fmtDue(d) {
+  const t = today();
+  if (d === t) return 'Today';
+  const tm = new Date(t + 'T00:00'); tm.setDate(tm.getDate() + 1);
+  if (d === tm.toISOString().slice(0, 10)) return 'Tomorrow';
+  return new Date(d + 'T00:00').toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' });
+}
+
+function render() {
+  const open = tasks.filter(t => !t.done).length;
+  const doneN = tasks.length - open;
+  $('sub').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  $('prog').style.width = tasks.length ? (doneN / tasks.length * 100) + '%' : '0';
+  $('count').textContent = open + ' remaining';
+  $('clear').style.visibility = doneN ? 'visible' : 'hidden';
+
+  let list = tasks.filter(t => filter === 'all' || (filter === 'done' ? t.done : !t.done));
+  list.sort((a, b) =>
+    (a.done - b.done) ||
+    (b.star - a.star) ||
+    ((a.due || '9999') < (b.due || '9999') ? -1 : (a.due || '9999') > (b.due || '9999') ? 1 : 0) ||
+    (a.created - b.created));
+
+  if (!list.length) {
+    $('list').innerHTML = '<div class="empty">' +
+      (filter === 'done' ? 'Nothing completed yet' : tasks.length && filter === 'active' ? 'All done 🎉' : 'No tasks yet.<br>Add one below.') + '</div>';
+    return;
+  }
+  $('list').innerHTML = list.map(t => {
+    const over = t.due && !t.done && t.due < today();
+    return `<li class="${t.done ? 'done' : ''}" data-id="${t.id}">
+      <button class="chk" data-a="toggle" aria-label="Toggle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg></button>
+      <div class="body">
+        <div class="txt" data-a="edit">${esc(t.text)}</div>
+        ${t.due ? `<div class="meta ${over ? 'over' : ''}">${over ? 'Overdue · ' : ''}${fmtDue(t.due)}</div>` : ''}
+      </div>
+      <button class="star ${t.star ? 'on' : ''}" data-a="star" aria-label="Star">${t.star ? '★' : '☆'}</button>
+      <button class="del" data-a="del" aria-label="Delete">✕</button>
+    </li>`;
+  }).join('');
+}
+
+$('form').addEventListener('submit', e => {
+  e.preventDefault();
+  const text = $('input').value.trim();
+  if (!text) return;
+  tasks.push({ id: uid(), text, done: false, star: false, due: $('due').value || null, created: Date.now() });
+  $('input').value = ''; $('due').value = '';
+  if (filter === 'done') setFilter('active');
+  save(); render();
+});
+
+$('list').addEventListener('click', e => {
+  const el = e.target.closest('[data-a]');
+  if (!el) return;
+  const li = el.closest('li');
+  const t = tasks.find(x => x.id === li.dataset.id);
+  if (!t) return;
+  const a = el.dataset.a;
+  if (a === 'toggle') { t.done = !t.done; if (navigator.vibrate) navigator.vibrate(10); }
+  else if (a === 'star') t.star = !t.star;
+  else if (a === 'del') tasks = tasks.filter(x => x !== t);
+  else if (a === 'edit') {
+    const n = prompt('Edit task', t.text);
+    if (n && n.trim()) t.text = n.trim();
+  }
+  save(); render();
+});
+
+$('clear').onclick = () => {
+  if (confirm('Delete all completed tasks?')) { tasks = tasks.filter(t => !t.done); save(); render(); }
+};
+
+function setFilter(f) {
+  filter = f;
+  document.querySelectorAll('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.f === f));
+  render();
+}
+$('tabs').addEventListener('click', e => { if (e.target.dataset.f) setFilter(e.target.dataset.f); });
+
+document.addEventListener('visibilitychange', () => { if (!document.hidden) render(); });
+render();
+
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
+</script>
+</body>
+</html>
